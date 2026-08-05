@@ -160,12 +160,32 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
+## Checkpoint-2 — API inteqrasiyası (fetch) & useEffect (20 bal)
+
+> **Checkpoint-2** · API inteqrasiyası + `useEffect` + `useFetch` custom hook · **20 bal**
+
+### Nələr edildi?
+
+1. **Custom Hook (`useFetch`)**:
+   - `src/hooks/useFetch.js` faylı yaratdıq.
+   - `useEffect` daxilində OMDb REST API-yə (`https://www.omdbapi.com/`) async `fetch` sorğusu göndərilir.
+   - `data`, `totalResults`, `loading`, və `error` state-ləri hook vasitəsilə qaytarılır.
+
+2. **Race Condition Müdafiəsi (AbortController)**:
+   - `useEffect` daxilində `AbortController` yaradıldı və `signal` parameteri `fetch`-ə ötürüldü.
+   - İstifadəçi tez-tez axtarış sözünü dəyişdikdə və ya səhifələrə keçdikdə `cleanup` funksiyası (`controller.abort()`) köhnə sorğunu avtomatik ləğv edir.
+   - Köhnə API cavabının yeni nəticəni əvəz etməsi (Race condition bug-ı) tam olaraq həll edildi.
+
+3. **Xəta İdarəetməsi (Error Handling)**:
+   - Şəbəkə xətaları, 500/404 server xətaları və OMDb API xətaları (`Response: "False"`, `"Too many results."`) tutulur və istifadəçiyə aydın mesaj göstərilir.
+   - Ləğv edilən sorğular üçün (`AbortError`) xəta mesajı verilmir.
+
+---
+
 ## Növbəti mərhələ
 
-**Checkpoint-2** — API inteqrasiyası:
-- `useEffect` ilə OMDb API-yə real sorğu
-- `useFetch` custom hook
-- `AbortController` ilə race condition qarşısının alınması
+**Checkpoint-3** — Axtarışda Debounce (15 bal):
+- Hər simvol yazıldıqda API çağırışının qarşısını almaq üçün debounce mexanizmi.
 
 ---
 
@@ -175,3 +195,5 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Poster şəkilləri** → `loading="lazy"` — yalnız görünən şəkillər yüklənir
 - **Animations** → `opacity` + `transform` — compositor-only, `layout` triggeri yoxdur
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
+- **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
+
