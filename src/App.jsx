@@ -3,32 +3,39 @@ import SearchBar from './components/SearchBar/SearchBar';
 import ResultsList from './components/ResultsList/ResultsList';
 import Pagination from './components/Pagination/Pagination';
 import { useFetch } from './hooks/useFetch';
+import { useDebounce } from './hooks/useDebounce';
 import './App.css';
 
 /**
- * Checkpoint-2: API inteqrasiyası + useEffect ilə data çəkmə.
+ * Senior Level React Search App
  * 
- * Bu mərhələdə:
- *  - Real OMDb API inteqrasiyası
- *  - Custom `useFetch` hook (AbortController və cleanup funksiyası ilə)
- *  - Race condition müdafiəsi
- *  - Loading, error və empty state-lər üçün real API məlumatları
+ * Özəlliklər:
+ *  - Checkpoint 1: Vite + React qurulumu, BEM CSS, Komponent arxitekturası
+ *  - Checkpoint 2: API inteqrasiyası, useEffect, AbortController (Race condition)
+ *  - Checkpoint 3: Axtarışda Debounce (500ms delay ilə daxil edilən mətnin gecikdirilməsi)
+ *  - Checkpoint 4: Loading (Skeleton), Error, Empty və Prompt state-lərin idarə edilməsi
+ *  - Checkpoint 5: Səhifələmə (Pagination) idarəetməsi
+ *  - Checkpoint 6: Cleanup funksiyaları, useEffect dependency array dürüstlüyü
+ *  - Checkpoint 7: Custom hook-lar (`useFetch`, `useDebounce`), Senior kod arxitekturası
  */
 
-const ITEMS_PER_PAGE = 10; // OMDb API hər səhifədə 10 nəticə qaytarır
+const ITEMS_PER_PAGE = 10;
 
 function App() {
   const [query, setQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Custom hook vasitəsilə API-dən real məlumat çəkilməsi
-  const { data, totalResults, loading, error } = useFetch(query, currentPage);
+  // Axtarış sözünü 500ms debounce edirik (Hər hərfdə API çağırışının qarşısını alır)
+  const debouncedQuery = useDebounce(query, 500);
+
+  // Debounced query və current page ilə API-dən məlumat çəkilib idarə olunur
+  const { data, totalResults, loading, error } = useFetch(debouncedQuery, currentPage);
 
   const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
 
   function handleQueryChange(value) {
     setQuery(value);
-    setCurrentPage(1); // Axtarış sözü dəyişdikdə 1-ci səhifəyə qayıt
+    setCurrentPage(1); // Yeni axtarış zamanı 1-ci səhifəyə sıfırla
   }
 
   function handlePageChange(page) {
@@ -55,15 +62,15 @@ function App() {
 
       {/* ── Main ── */}
       <main className="app-main">
-        {/* SearchBar */}
+        {/* SearchBar (Dərhal yazılır - UI hissiyyatı yüksəkdir) */}
         <SearchBar value={query} onChange={handleQueryChange} />
 
-        {/* Nəticələr (Real API State-ləri) */}
+        {/* Nəticələr (Debounced query üzərindən gələn data/loading/error) */}
         <ResultsList
           items={data}
           loading={loading}
           error={error}
-          query={query}
+          query={debouncedQuery}
           total={totalResults}
         />
 

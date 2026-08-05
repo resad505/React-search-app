@@ -182,18 +182,69 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
-## Növbəti mərhələ
+## Checkpoint-3 — Axtarışda Debounce (15 bal)
 
-**Checkpoint-3** — Axtarışda Debounce (15 bal):
-- Hər simvol yazıldıqda API çağırışının qarşısını almaq üçün debounce mexanizmi.
+> **Checkpoint-3** · `useDebounce` custom hook · **15 bal**
+
+### Nələr edildi?
+- `src/hooks/useDebounce.js` faylı yaradıldı.
+- İstifadəçi daxil etdiyi mətni 500ms ləngitmə ilə (`setTimeout` + `clearTimeout`) emal edir.
+- Hər hərf yazıldıqda gereksiz API çağırışlarının qarşısı alındı, şəbəkə trafiki optimallaşdırıldı.
 
 ---
 
-## Sürət məsləhətləri (Performance Notes)
+## Checkpoint-4 — UI State-lərin İdarə Edilməsi (15 bal)
+
+> **Checkpoint-4** · Loading, Error, Empty və Prompt state-ləri · **15 bal**
+
+### Nələr edildi?
+- **Loading State**: `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
+- **Error State**: Şəbəkə, API və server xətaları `role="alert"` ilə xüsusi xəta konteynerində təqdim edilir.
+- **Empty State**: Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading sonsuz fırlanmır.
+- **Prompt State**: Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin ekran göstərilir.
+
+---
+
+## Checkpoint-5 — Səhifələmə / Pagination (15 bal)
+
+> **Checkpoint-5** · `Pagination` komponenti & API Səhifələməsi · **15 bal**
+
+### Nələr edildi?
+- OMDb API-dən gələn `totalResults` dəyərinə əsasən dinamik səhifə sayı hesablanır (`Math.ceil(totalResults / 10)`).
+- Səhifə dəyişdikdə `useFetch` avtomatik olaraq həmin səhifənin məlumatlarını çəkir və səhifənin yuxarısına rahat `smooth` scroll edir.
+- Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
+
+---
+
+## Checkpoint-6 — Hook-ların Düzgün İstifadəsi (15 bal)
+
+> **Checkpoint-6** · Dependency Array dürüstlüyü & Cleanup mexanizmi · **15 bal**
+
+### Nələr edildi?
+- `useEffect` hook-larının dependency array-ləri (`[query, page]`, `[value, delay]`) dəqiq müəyyən edildi.
+- `useDebounce` daxilində `clearTimeout` cleanup-ı ilə yaddaş sızmasının (memory leak) qarşısı alındı.
+- `useFetch` daxilində `controller.abort()` cleanup-ı ilə köhnə sorğuların ləğvi təmin olundu.
+
+---
+
+## Checkpoint-7 — Kod Təşkili & Keyfiyyət Yoxlamaları (10 bal)
+
+> **Checkpoint-7** · Senior Kod Arxitekturası & Clean Code · **10 bal**
+
+### Nələr edildi?
+- Kod arxitekturası modulyar custom hook-lara (`useFetch`, `useDebounce`) bölündü.
+- BEM metodologiyası, Semantik HTML və A11y (əlçatanlıq) standartları tam tətbiq edildi.
+- Race Condition, API Limiting və Boş state idarəetməsi kimi keyfiyyət yoxlamalarından keçdi.
+
+---
+
+## Sürət və Performans Məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
 - **Poster şəkilləri** → `loading="lazy"` — yalnız görünən şəkillər yüklənir
 - **Animations** → `opacity` + `transform` — compositor-only, `layout` triggeri yoxdur
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
+- **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
+
 
