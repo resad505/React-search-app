@@ -28,7 +28,7 @@ Açıq REST API-yə (məsələn OMDb, ya oxşar açıq API) qoşulan, axtarış,
 checkpoint-1:Layihə qurulumu (Vite + React), komponent strukturu (SearchBar, ResultsList, Card, Pagination) Qiymətləndirmə: 10 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
 checkpoint-2:API inteqrasiyası (fetch/axios), useEffect ilə data çəkmə Qiymətləndirmə: 20 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
 checkpoint-3:Axtarışda debounce (hər hərfdə API çağırışı olmamalı) Qiymətləndirmə: 15 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
-checkpoint-4:
-checkpoint-5:
-checkpoint-6:
-checkpoint-7:
+checkpoint-4:Loading, error və boş (empty) state-lərin ayrı-ayrı göstərilməsi Qiymətləndirmə: 15 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
+checkpoint-5:Pagination və ya infinite scroll Qiymətləndirmə: 15 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
+checkpoint-6:Hook-ların düzgün istifadəsi (dependency array, cleanup funksiyası ilə köhnə sorğunun ləğvi) Qiymətləndirmə: 15 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.
+checkpoint-7:Kod təşkili (data çəkmə üçün custom hook, məs. useFetch) Qiymətləndirmə: 10 bal. Bu mərhələdə gördüyünüz işi tələb olunan formada təqdim edin.

@@ -1,0 +1,95 @@
+/* ============================================================
+   Block: search-bar
+   Elements: __icon  __input  __clear
+   ============================================================ */
+.search-bar {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 32px;
+}
+
+/* ── Element: __icon ── */
+.search-bar__icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-light);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.search-bar__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Modifier: icon aktiv olduqda (focus-within) */
+.search-bar:focus-within .search-bar__icon {
+  color: var(--primary);
+}
+
+/* ── Element: __input ── */
+.search-bar__input {
+  width: 100%;
+  height: 52px;
+  padding: 0 48px 0 46px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  font-size: 15px;
+  color: var(--text-main);
+  background-color: var(--bg-card);
+  outline: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-bar__input::placeholder {
+  color: var(--text-light);
+}
+
+.search-bar__input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12), var(--shadow-sm);
+}
+
+/* ── Element: __clear ── */
+.search-bar__clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.search-bar__clear:hover {
+  background-color: var(--bg-main);
+  color: var(--text-muted);
+}
+
+.search-bar__clear svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
