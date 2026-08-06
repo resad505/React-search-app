@@ -184,24 +184,39 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ## Checkpoint-3 — Axtarışda Debounce (15 bal)
 
-> **Checkpoint-3** · `useDebounce` custom hook · **15 bal**
+> **Checkpoint-3** · `useDebounce` custom hook (500ms delay) · **15 bal**
 
 ### Nələr edildi?
-- `src/hooks/useDebounce.js` faylı yaradıldı.
-- İstifadəçi daxil etdiyi mətni 500ms ləngitmə ilə (`setTimeout` + `clearTimeout`) emal edir.
-- Hər hərf yazıldıqda gereksiz API çağırışlarının qarşısı alındı, şəbəkə trafiki optimallaşdırıldı.
+1. **`useDebounce` Custom Hook**:
+   - `src/hooks/useDebounce.js` faylı yaradıldı.
+   - `setTimeout` və `clearTimeout` mexanizmi ilə daxil edilən axtarış mətni 500ms ləngidilir.
+2. **Şəbəkə Optimallaşdırılması**:
+   - İstifadəçi klaviaturada hərf-hərf yazarkən hər simvolda API-yə gereksiz sorğular göndərilmir.
+   - Yalnız istifadəçi yazmanı dayandırdıqdan 500ms sonra tək bir API sorğusu icra edilir.
+3. **Sorğunin Ləğvi (Cleanup)**:
+   - `useEffect` cleanup funksiyası ilə hər yeni simvol daxil edildikdə köhnə taymer (`clearTimeout(handler)`) avtomatik ləğv edilir.
 
 ---
 
-## Checkpoint-4 — UI State-lərin İdarə Edilməsi (15 bal)
+## Checkpoint-4 — UI State-lərin İdarə Edilməsi & Film Sayının Artırılması (15 bal)
 
-> **Checkpoint-4** · Loading, Error, Empty və Prompt state-ləri · **15 bal**
+> **Checkpoint-4** · Loading, Error, Empty, Prompt state-ləri & 20 Film/Səhifə · **15 bal**
 
 ### Nələr edildi?
-- **Loading State**: `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
-- **Error State**: Şəbəkə, API və server xətaları `role="alert"` ilə xüsusi xəta konteynerində təqdim edilir.
-- **Empty State**: Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading sonsuz fırlanmır.
-- **Prompt State**: Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin ekran göstərilir.
+1. **Filmlərin Sayının Artırılması (20 Film/Səhifə)**:
+   - `useFetch` custom hook-u yenilənərək `Promise.all` ilə OMDb-dən paralel 2 səhifə (`omdbPage1` və `omdbPage2`) çəkilir.
+   - Hər səhifədə **10 film əvəzinə 20 film nəticəsi** təqdim olunur.
+   - Təkrarlanan filmlərin qarşısı unikal `imdbID` Map filtri ilə alınır.
+2. **Loading State**:
+   - Sorğu göndərildikdə `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
+   - Shimmer animasiyası GPU-accelerated (`translateX`) işləyir.
+3. **Error State**:
+   - Şəbəkə kəsilməsi, HTTP xətaları (500/404) və API xətaları (`Response: "False"`, `"Too many results."`) tutulur.
+   - Screen reader-lər üçün `role="alert"` atributlu bildiriş paneli göstərilir.
+4. **Empty State**:
+   - Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading fırlanması sonsuz olmur.
+5. **Prompt State**:
+   - Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin "Film axtar" ekranı təqdim edilir.
 
 ---
 
@@ -210,8 +225,8 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 > **Checkpoint-5** · `Pagination` komponenti & API Səhifələməsi · **15 bal**
 
 ### Nələr edildi?
-- OMDb API-dən gələn `totalResults` dəyərinə əsasən dinamik səhifə sayı hesablanır (`Math.ceil(totalResults / 10)`).
-- Səhifə dəyişdikdə `useFetch` avtomatik olaraq həmin səhifənin məlumatlarını çəkir və səhifənin yuxarısına rahat `smooth` scroll edir.
+- OMDb API-dən gələn `totalResults` dəyərinə əsasən dinamik səhifə sayı hesablanır (`Math.ceil(totalResults / 20)`).
+- Səhifə dəyişdikdə `useFetch` avtomatik olaraq həmin səhifənin 20 məlumatını çəkir və səhifənin yuxarısına rahat `smooth` scroll edir.
 - Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
 
 ---
@@ -246,5 +261,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
 - **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
+- **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
 
