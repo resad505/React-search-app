@@ -154,7 +154,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 ```
 
 **Qaydalar:**
-- Webkit prefiksi yoxdur — yalnız standart CSS
+
 - Animasiyalar `transform` + `opacity` ilə — compositor thread, reflow yoxdur
 - CSS custom properties (`--var`) design token sistemi kimi
 
