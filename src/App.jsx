@@ -9,26 +9,21 @@ import './App.css';
 /**
  * Senior Level React Search App
  * 
- * Özəlliklər:
- *  - Checkpoint 1: Vite + React qurulumu, BEM CSS, Komponent arxitekturası
- *  - Checkpoint 2: API inteqrasiyası, useEffect, AbortController (Race condition)
- *  - Checkpoint 3: Axtarışda Debounce (500ms delay ilə daxil edilən mətnin gecikdirilməsi)
- *  - Checkpoint 4: Loading (Skeleton), Error, Empty və Prompt state-lərin idarə edilməsi
- *  - Checkpoint 5: Səhifələmə (Pagination) idarəetməsi
- *  - Checkpoint 6: Cleanup funksiyaları, useEffect dependency array dürüstlüyü
- *  - Checkpoint 7: Custom hook-lar (`useFetch`, `useDebounce`), Senior kod arxitekturası
+ * Checkpoint 4:
+ *  - Filmlərin sayı artırıldı (Hər səhifədə 20 film göstərilir)
+ *  - Loading (Skeleton Shimmer), Error, Empty və Prompt state-ləri tam təcrid olunub
  */
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20; // Hər səhifədə 20 film nəticəsi
 
 function App() {
   const [query, setQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Axtarış sözünü 500ms debounce edirik (Hər hərfdə API çağırışının qarşısını alır)
+  // Axtarış sözü 500ms debounce edilir
   const debouncedQuery = useDebounce(query, 500);
 
-  // Debounced query və current page ilə API-dən məlumat çəkilib idarə olunur
+  // Debounced query və current page ilə API-dən 20 film çəkilir
   const { data, totalResults, loading, error } = useFetch(debouncedQuery, currentPage);
 
   const totalPages = Math.ceil(totalResults / ITEMS_PER_PAGE);
@@ -62,10 +57,10 @@ function App() {
 
       {/* ── Main ── */}
       <main className="app-main">
-        {/* SearchBar (Dərhal yazılır - UI hissiyyatı yüksəkdir) */}
+        {/* SearchBar */}
         <SearchBar value={query} onChange={handleQueryChange} />
 
-        {/* Nəticələr (Debounced query üzərindən gələn data/loading/error) */}
+        {/* Nəticələr — Checkpoint 4 (Loading, Error, Empty, Prompt state-ləri) */}
         <ResultsList
           items={data}
           loading={loading}
