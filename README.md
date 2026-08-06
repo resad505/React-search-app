@@ -268,6 +268,33 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
+## Checkpoint-7 — Kod Təşkili & Custom Hook Arxitekturası (10 bal)
+
+> **Checkpoint-7** · Data çəkmə üçün `useFetch` custom hook-u & Senior Kod Strukturu · **10 bal**
+
+### Nələr edildi?
+
+1. **Modulyar Custom Hook Arxitekturası (`src/hooks/`)**:
+   - Data çəkmə məntiqi tamamilə `useFetch.js` custom hook-una köçürüldü. `App.jsx` yalnız UI idarəetməsi ilə məşğul olur — **Single Responsibility Principle** tam tətbiq edildi.
+   - Debounce məntiqi ayrıca `useDebounce.js` hook-una ayrıldı. Bu hook istənilən dəyərə tətbiq edilə bilən ümumi (generic) bir yardımçı kimi yazıldı.
+
+2. **Hook Interfeysi (Clean API)**:
+   ```js
+   // useFetch — data, loading, error, total-u qaytarır
+   const { data, totalResults, loading, error } = useFetch(debouncedQuery, currentPage);
+
+   // useDebounce — gecikdirilmiş dəyəri qaytarır
+   const debouncedQuery = useDebounce(query, 500);
+   ```
+
+3. **Keyfiyyət Yoxlamalarından Keçmə**:
+   - **Race Condition**: `AbortController` ilə tam həll olunub.
+   - **API 500 / Key Limit**: Xəta idarəetmə tam tətbiq olunub, tətbiq çökmür.
+   - **Sonsuz Loading Spinner**: Boş nəticədə `loading` `false`-a düşür, sonsuz dövr yoxdur.
+   - **BEM CSS & Semantik HTML**: Bütün komponentlər BEM konvensiyasına, `aria-*` atributları ilə tam əlçatanlıq standartlarına uyğundur.
+
+---
+
 ## Sürət məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
@@ -277,6 +304,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
 - **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
 - **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
 
 
