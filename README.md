@@ -249,6 +249,25 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
+## Checkpoint-6 — Hook-ların Düzgün İstifadəsi (15 bal)
+
+> **Checkpoint-6** · Dependency Array Dürüstlüyü & Clean-up Mexanizmləri · **15 bal**
+
+### Nələr edildi?
+
+1. **Dəqiq Dependency Array-lər**:
+   - `useFetch` hook-unda `useEffect` dependency array-ı `[query, page]` olaraq dəqiq müəyyənləşdirildi. Yalnız bu arqumentlər dəyişdikdə fetch effekti yenidən icra olunur (unnecessary re-render-lər önləndi).
+   - `useDebounce` hook-unda dependency array `[value, delay]` dəqiqliyi ilə saxlanıldı.
+
+2. **Yaddaş Sızmasının Qarşısının Alınması (`clearTimeout`)**:
+   - `useDebounce` daxilində `useEffect` cleanup funksiyası `return () => clearTimeout(handler);` vasitəsilə hər yeni hərf yazıldıqda evvelki taymerləri avtomatik təmizləyir.
+
+3. **Köhnə Sorğuların Şəbəkə Səviyyəsində Ləğvi (`AbortController`)**:
+   - `useFetch` daxilində sorğu başladıqda `new AbortController()` yaradılır və cleanup funksiyası `controller.abort()` vasitəsilə tamamlanmamış köhnə HTTP sorğularını şəbəkə səviyyəsində ləğv edir.
+   - Sorğu ləğv edildikdə `err.name === 'AbortError'` yoxlanaraq xəta state-inin lüzumsuz yenilənməsi əngəllənir.
+
+---
+
 ## Sürət məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
@@ -258,6 +277,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
 - **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
 - **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
 
 
