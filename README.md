@@ -182,86 +182,18 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
-## Checkpoint-3 — Axtarışda Debounce (15 bal)
+## Növbəti mərhələ
 
-> **Checkpoint-3** · `useDebounce` custom hook (500ms delay) · **15 bal**
-
-### Nələr edildi?
-1. **`useDebounce` Custom Hook**:
-   - `src/hooks/useDebounce.js` faylı yaradıldı.
-   - `setTimeout` və `clearTimeout` mexanizmi ilə daxil edilən axtarış mətni 500ms ləngidilir.
-2. **Şəbəkə Optimallaşdırılması**:
-   - İstifadəçi klaviaturada hərf-hərf yazarkən hər simvolda API-yə gereksiz sorğular göndərilmir.
-   - Yalnız istifadəçi yazmanı dayandırdıqdan 500ms sonra tək bir API sorğusu icra edilir.
-3. **Sorğunin Ləğvi (Cleanup)**:
-   - `useEffect` cleanup funksiyası ilə hər yeni simvol daxil edildikdə köhnə taymer (`clearTimeout(handler)`) avtomatik ləğv edilir.
+**Checkpoint-3** — Axtarışda Debounce (15 bal):
+- Hər simvol yazıldıqda API çağırışının qarşısını almaq üçün debounce mexanizmi.
 
 ---
 
-## Checkpoint-4 — UI State-lərin İdarə Edilməsi & Film Sayının Artırılması (15 bal)
-
-> **Checkpoint-4** · Loading, Error, Empty, Prompt state-ləri & 20 Film/Səhifə · **15 bal**
-
-### Nələr edildi?
-1. **Filmlərin Sayının Artırılması (20 Film/Səhifə)**:
-   - `useFetch` custom hook-u yenilənərək `Promise.all` ilə OMDb-dən paralel 2 səhifə (`omdbPage1` və `omdbPage2`) çəkilir.
-   - Hər səhifədə **10 film əvəzinə 20 film nəticəsi** təqdim olunur.
-   - Təkrarlanan filmlərin qarşısı unikal `imdbID` Map filtri ilə alınır.
-2. **Loading State**:
-   - Sorğu göndərildikdə `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
-   - Shimmer animasiyası GPU-accelerated (`translateX`) işləyir.
-3. **Error State**:
-   - Şəbəkə kəsilməsi, HTTP xətaları (500/404) və API xətaları (`Response: "False"`, `"Too many results."`) tutulur.
-   - Screen reader-lər üçün `role="alert"` atributlu bildiriş paneli göstərilir.
-4. **Empty State**:
-   - Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading fırlanması sonsuz olmur.
-5. **Prompt State**:
-   - Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin "Film axtar" ekranı təqdim edilir.
-
----
-
-## Checkpoint-5 — Səhifələmə / Pagination (15 bal)
-
-> **Checkpoint-5** · `Pagination` komponenti & API Səhifələməsi · **15 bal**
-
-### Nələr edildi?
-- OMDb API-dən gələn `totalResults` dəyərinə əsasən dinamik səhifə sayı hesablanır (`Math.ceil(totalResults / 20)`).
-- Səhifə dəyişdikdə `useFetch` avtomatik olaraq həmin səhifənin 20 məlumatını çəkir və səhifənin yuxarısına rahat `smooth` scroll edir.
-- Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
-
----
-
-## Checkpoint-6 — Hook-ların Düzgün İstifadəsi (15 bal)
-
-> **Checkpoint-6** · Dependency Array dürüstlüyü & Cleanup mexanizmi · **15 bal**
-
-### Nələr edildi?
-- `useEffect` hook-larının dependency array-ləri (`[query, page]`, `[value, delay]`) dəqiq müəyyən edildi.
-- `useDebounce` daxilində `clearTimeout` cleanup-ı ilə yaddaş sızmasının (memory leak) qarşısı alındı.
-- `useFetch` daxilində `controller.abort()` cleanup-ı ilə köhnə sorğuların ləğvi təmin olundu.
-
----
-
-## Checkpoint-7 — Kod Təşkili & Keyfiyyət Yoxlamaları (10 bal)
-
-> **Checkpoint-7** · Senior Kod Arxitekturası & Clean Code · **10 bal**
-
-### Nələr edildi?
-- Kod arxitekturası modulyar custom hook-lara (`useFetch`, `useDebounce`) bölündü.
-- BEM metodologiyası, Semantik HTML və A11y (əlçatanlıq) standartları tam tətbiq edildi.
-- Race Condition, API Limiting və Boş state idarəetməsi kimi keyfiyyət yoxlamalarından keçdi.
-
----
-
-## Sürət və Performans Məsləhətləri (Performance Notes)
+## Sürət məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
 - **Poster şəkilləri** → `loading="lazy"` — yalnız görünən şəkillər yüklənir
 - **Animations** → `opacity` + `transform` — compositor-only, `layout` triggeri yoxdur
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
-- **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
-- **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
-
-
 
