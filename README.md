@@ -182,10 +182,49 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
-## Növbəti mərhələ
+## Checkpoint-3 — Axtarışda Debounce (15 bal)
 
-**Checkpoint-3** — Axtarışda Debounce (15 bal):
-- Hər simvol yazıldıqda API çağırışının qarşısını almaq üçün debounce mexanizmi.
+> **Checkpoint-3** · `useDebounce` custom hook (500ms delay) · **15 bal**
+
+### Nələr edildi?
+
+1. **Custom Hook (`useDebounce`)**:
+   - `src/hooks/useDebounce.js` faylı yaradıldı.
+   - `setTimeout` və `clearTimeout` mexanizmi ilə daxil edilən axtarış mətni 500ms ləngidilir.
+
+2. **Şəbəkə Optimallaşdırılması (Performance)**:
+   - İstifadəçi klaviaturada hərf-hərf yazarkən hər simvolda API-yə gereksiz sorğular göndərilmir.
+   - Yalnız istifadəçi yazmanı dayandırdıqdan 500ms sonra tək bir API sorğusu icra edilir.
+
+3. **Sorğunun Ləğvi (Cleanup)**:
+   - `useEffect` cleanup funksiyası daxilində `clearTimeout(handler)` istifadə edilərək hər yeni simvolda köhnə taymer ləğv olunur və yaddaş sızması önlənir.
+
+---
+
+## Checkpoint-4 — UI State-lərin İdarə Edilməsi & Film Sayının Artırılması (15 bal)
+
+> **Checkpoint-4** · Loading, Error, Empty, Prompt state-ləri & 20 Film/Səhifə · **15 bal**
+
+### Nələr edildi?
+
+1. **Filmlərin Sayının Artırılması (20 Film/Səhifə)**:
+   - `useFetch` custom hook-unda `Promise.all` tətbiq olunaraq OMDb-dən paralel 2 səhifə çəkilir.
+   - Hər səhifədə **10 film əvəzinə 20 film nəticəsi** təqdim olunur.
+   - Təkrarlanan filmlərin qarşısı unikal `imdbID` Map filtri ilə alınır.
+
+2. **Loading State (Skeleton Shimmer)**:
+   - Sorğu göndərildikdə `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
+   - Shimmer animasiyası GPU-accelerated (`translateX`) işləyir.
+
+3. **Error State (Xəta paneli)**:
+   - Şəbəkə kəsilməsi, HTTP xətaları (500/404) və API xətaları (`Response: "False"`, `"Too many results."`) tutulur.
+   - Screen reader-lər üçün `role="alert"` atributlu bildiriş paneli göstərilir.
+
+4. **Empty State (Boş nəticə)**:
+   - Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading fırlanması sonsuz olmur.
+
+5. **Prompt State (İlkin hal)**:
+   - Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin "Film axtar" ekranı təqdim edilir.
 
 ---
 
@@ -196,4 +235,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Animations** → `opacity` + `transform` — compositor-only, `layout` triggeri yoxdur
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
+- **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
+- **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
