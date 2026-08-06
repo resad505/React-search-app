@@ -228,6 +228,27 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ---
 
+## Checkpoint-5 — Səhifələmə / Pagination (15 bal)
+
+> **Checkpoint-5** · `Pagination` komponenti & Dinamik API Səhifələməsi · **15 bal**
+
+### Nələr edildi?
+
+1. **Dinamik Səhifələmə Hesablanması**:
+   - OMDb API-dən gələn `totalResults` sayına əsasən ümumi səhifə sayı dəqiq hesablanır (`Math.ceil(totalResults / 20)`).
+   - Hər görünən səhifə üçün API-yə uyğun olan OMDb `page` parametrləri göndərilir.
+
+2. **Ağıllı Ellipsis Range (`buildPageRange`)**:
+   - Səhifə sayı çox olduqda `[1, '...', 4, 5, 6, '...', 15]` formatında ağıllı diapazon göstərilir.
+   - Sərhəddə olan (1-ci səhifədə `Əvvəlki` və sonuncu səhifədə `Növbəti`) düymələr avtomatik `disabled` halına keçir.
+
+3. **İstifadəçi Təcrübəsi & State Reseti**:
+   - Səhifə dəyişdikdə tətbiq avtomatik və rahat şəkildə yuxarıya (`window.scrollTo({ top: 0, behavior: 'smooth' })`) sürüşür.
+   - Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
+   - Aktiv səhifə düyməsi screen reader-lər üçün `aria-current="page"` atributu ilə işarələnir.
+
+---
+
 ## Sürət məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
@@ -237,5 +258,6 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
 - **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
 - **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
 
