@@ -154,7 +154,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 ```
 
 **Qaydalar:**
-- Webkit prefiksi yoxdur — yalnız standart CSS
+
 - Animasiyalar `transform` + `opacity` ilə — compositor thread, reflow yoxdur
 - CSS custom properties (`--var`) design token sistemi kimi
 
@@ -184,61 +184,72 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 
 ## Checkpoint-3 — Axtarışda Debounce (15 bal)
 
-> **Checkpoint-3** · `useDebounce` custom hook · **15 bal**
+> **Checkpoint-3** · `useDebounce` custom hook (500ms delay) · **15 bal**
 
 ### Nələr edildi?
-- `src/hooks/useDebounce.js` faylı yaradıldı.
-- İstifadəçi daxil etdiyi mətni 500ms ləngitmə ilə (`setTimeout` + `clearTimeout`) emal edir.
-- Hər hərf yazıldıqda gereksiz API çağırışlarının qarşısı alındı, şəbəkə trafiki optimallaşdırıldı.
+
+1. **Custom Hook (`useDebounce`)**:
+   - `src/hooks/useDebounce.js` faylı yaradıldı.
+   - `setTimeout` və `clearTimeout` mexanizmi ilə daxil edilən axtarış mətni 500ms ləngidilir.
+
+2. **Şəbəkə Optimallaşdırılması (Performance)**:
+   - İstifadəçi klaviaturada hərf-hərf yazarkən hər simvolda API-yə gereksiz sorğular göndərilmir.
+   - Yalnız istifadəçi yazmanı dayandırdıqdan 500ms sonra tək bir API sorğusu icra edilir.
+
+3. **Sorğunun Ləğvi (Cleanup)**:
+   - `useEffect` cleanup funksiyası daxilində `clearTimeout(handler)` istifadə edilərək hər yeni simvolda köhnə taymer ləğv olunur və yaddaş sızması önlənir.
 
 ---
 
-## Checkpoint-4 — UI State-lərin İdarə Edilməsi (15 bal)
+## Checkpoint-4 — UI State-lərin İdarə Edilməsi & Film Sayının Artırılması (15 bal)
 
-> **Checkpoint-4** · Loading, Error, Empty və Prompt state-ləri · **15 bal**
+> **Checkpoint-4** · Loading, Error, Empty, Prompt state-ləri & 20 Film/Səhifə · **15 bal**
 
 ### Nələr edildi?
-- **Loading State**: `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
-- **Error State**: Şəbəkə, API və server xətaları `role="alert"` ilə xüsusi xəta konteynerində təqdim edilir.
-- **Empty State**: Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading sonsuz fırlanmır.
-- **Prompt State**: Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin ekran göstərilir.
+
+1. **Filmlərin Sayının Artırılması (20 Film/Səhifə)**:
+   - `useFetch` custom hook-unda `Promise.all` tətbiq olunaraq OMDb-dən paralel 2 səhifə çəkilir.
+   - Hər səhifədə **10 film əvəzinə 20 film nəticəsi** təqdim olunur.
+   - Təkrarlanan filmlərin qarşısı unikal `imdbID` Map filtri ilə alınır.
+
+2. **Loading State (Skeleton Shimmer)**:
+   - Sorğu göndərildikdə `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
+   - Shimmer animasiyası GPU-accelerated (`translateX`) işləyir.
+
+3. **Error State (Xəta paneli)**:
+   - Şəbəkə kəsilməsi, HTTP xətaları (500/404) və API xətaları (`Response: "False"`, `"Too many results."`) tutulur.
+   - Screen reader-lər üçün `role="alert"` atributlu bildiriş paneli göstərilir.
+
+4. **Empty State (Boş nəticə)**:
+   - Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading fırlanması sonsuz olmur.
+
+5. **Prompt State (İlkin hal)**:
+   - Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin "Film axtar" ekranı təqdim edilir.
 
 ---
 
 ## Checkpoint-5 — Səhifələmə / Pagination (15 bal)
 
-> **Checkpoint-5** · `Pagination` komponenti & API Səhifələməsi · **15 bal**
+> **Checkpoint-5** · `Pagination` komponenti & Dinamik API Səhifələməsi · **15 bal**
 
 ### Nələr edildi?
-- OMDb API-dən gələn `totalResults` dəyərinə əsasən dinamik səhifə sayı hesablanır (`Math.ceil(totalResults / 10)`).
-- Səhifə dəyişdikdə `useFetch` avtomatik olaraq həmin səhifənin məlumatlarını çəkir və səhifənin yuxarısına rahat `smooth` scroll edir.
-- Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
+
+1. **Dinamik Səhifələmə Hesablanması**:
+   - OMDb API-dən gələn `totalResults` sayına əsasən ümumi səhifə sayı dəqiq hesablanır (`Math.ceil(totalResults / 20)`).
+   - Hər görünən səhifə üçün API-yə uyğun olan OMDb `page` parametrləri göndərilir.
+
+2. **Ağıllı Ellipsis Range (`buildPageRange`)**:
+   - Səhifə sayı çox olduqda `[1, '...', 4, 5, 6, '...', 15]` formatında ağıllı diapazon göstərilir.
+   - Sərhəddə olan (1-ci səhifədə `Əvvəlki` və sonuncu səhifədə `Növbəti`) düymələr avtomatik `disabled` halına keçir.
+
+3. **İstifadəçi Təcrübəsi & State Reseti**:
+   - Səhifə dəyişdikdə tətbiq avtomatik və rahat şəkildə yuxarıya (`window.scrollTo({ top: 0, behavior: 'smooth' })`) sürüşür.
+   - Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
+   - Aktiv səhifə düyməsi screen reader-lər üçün `aria-current="page"` atributu ilə işarələnir.
 
 ---
 
-## Checkpoint-6 — Hook-ların Düzgün İstifadəsi (15 bal)
-
-> **Checkpoint-6** · Dependency Array dürüstlüyü & Cleanup mexanizmi · **15 bal**
-
-### Nələr edildi?
-- `useEffect` hook-larının dependency array-ləri (`[query, page]`, `[value, delay]`) dəqiq müəyyən edildi.
-- `useDebounce` daxilində `clearTimeout` cleanup-ı ilə yaddaş sızmasının (memory leak) qarşısı alındı.
-- `useFetch` daxilində `controller.abort()` cleanup-ı ilə köhnə sorğuların ləğvi təmin olundu.
-
----
-
-## Checkpoint-7 — Kod Təşkili & Keyfiyyət Yoxlamaları (10 bal)
-
-> **Checkpoint-7** · Senior Kod Arxitekturası & Clean Code · **10 bal**
-
-### Nələr edildi?
-- Kod arxitekturası modulyar custom hook-lara (`useFetch`, `useDebounce`) bölündü.
-- BEM metodologiyası, Semantik HTML və A11y (əlçatanlıq) standartları tam tətbiq edildi.
-- Race Condition, API Limiting və Boş state idarəetməsi kimi keyfiyyət yoxlamalarından keçdi.
-
----
-
-## Sürət və Performans Məsləhətləri (Performance Notes)
+## Sürət məsləhətləri (Performance Notes)
 
 - **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
 - **Poster şəkilləri** → `loading="lazy"` — yalnız görünən şəkillər yüklənir
@@ -246,5 +257,7 @@ Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazıl�
 - **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
 - **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
 - **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
+- **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+
 
 
