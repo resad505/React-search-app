@@ -1,68 +1,134 @@
 # FilmAxtarış — React Search App
 
-> **Checkpoint-1** · Layihə qurulumu + Komponent strukturu · **10 bal**
+> OMDb açıq REST API-yə qoşulan, axtarış, loading/error state-ləri,
+> debounce, AbortController-lə race condition müdafiəsi və pagination-a sahib
+> senior-səviyyəli React tətbiqi.
 
 ---
 
-## Layihə haqqında
+## Cəmi Bal: 100/100
 
-OMDb açıq API-yə qoşulan, axtarış, loading/error state-ləri və səhifələmə funksiyasına sahib React tətbiqi.  
-Bu checkpoint-də layihənin bünövrəsi — Vite + React qurulumu və bütün komponent strukturu qurulub.
+| Checkpoint | Mövzu | Bal |
+|---|---|---|
+| CP-1 | Layihə qurulumu + komponent strukturu | 10 |
+| CP-2 | API inteqrasiyası + `useEffect` | 20 |
+| CP-3 | Axtarışda debounce | 15 |
+| CP-4 | Loading / Error / Empty / Prompt state-ləri | 15 |
+| CP-5 | Pagination | 15 |
+| CP-6 | Hook-ların düzgün istifadəsi | 15 |
+| CP-7 | Kod təşkili — custom hook arxitekturası | 10 |
+| **CƏMI** | | **100** |
 
 ---
 
 ## Texnologiyalar
 
-| Texnologiya | Versiya | Səbəb |
+| Texnologiya | Versiya | Niyə seçildi |
 |---|---|---|
-| **Vite** | 8.x | Ultra-sürətli HMR, minimal konfiqurasiya |
-| **React** | 19.x | Hooks-əsaslı komponent arxitekturası |
-| **Vanilla CSS** | — | BEM metodologiyası, sıfır asılılıq |
-| **Inter** | Google Fonts | Əvvəlki layihələrlə eyni tip sistemi |
+| **Vite** | 8.x | CRA deprecated-dir; Vite native ES modules ilə 50ms HMR verir |
+| **React** | 19.x | Hooks-əsaslı, functional komponent arxitekturası |
+| **Vanilla CSS + BEM** | — | Sıfır dependency, CSS specificity konflikti yoxdur |
+| **Inter** | Google Fonts | Oxunaqlı, professional tipografiya |
+| **OMDb API** | v1 | Açıq, pulsuz REST API — `https://www.omdbapi.com/` |
 
 ---
 
-## Qurulum
+## Tez Başlanğıc
 
 ```bash
+# Asılılıqları yüklə
 npm install
+
+# Development serverini başlat
 npm run dev
 ```
 
 Tətbiq `http://localhost:5173` ünvanında açılacaq.
 
----
+### Digər skriptlər
 
-## Fayl strukturu
-
-```
-src/
-├── main.jsx                         # React root mount
-├── index.css                        # Global reset + CSS design tokens (:root)
-├── App.jsx                          # Ana komponent — state idarəsi
-├── App.css                          # Layout: app, app-header, app-main blokları
-└── components/
-    ├── SearchBar/
-    │   ├── SearchBar.jsx            # Controlled input, clear düyməsi
-    │   └── SearchBar.css            # BEM: search-bar__icon/input/clear
-    ├── ResultsList/
-    │   ├── ResultsList.jsx          # 4 vəziyyət: loading/error/empty/nəticələr
-    │   └── ResultsList.css          # BEM: results-list__state--prompt/empty/error
-    ├── Card/
-    │   ├── Card.jsx                 # Film kartı — poster, badge, lazy load
-    │   └── Card.css                 # BEM: card__poster-wrap/body/title/year
-    └── Pagination/
-        ├── Pagination.jsx           # Smart ellipsis range ([1,…,4,5,6,…,12])
-        └── Pagination.css           # BEM: pagination__btn--active/ellipsis
+```bash
+npm run build    # Production bundle
+npm run preview  # Build-i lokalda preview et
+npm run lint     # Oxlint ilə kod analizi
 ```
 
 ---
 
-## Komponentlər
+## Tam Fayl Strukturu
 
-### `SearchBar`
+```
+react-search-app-task-3/
+├── index.html                         # HTML entry point (Google Fonts preconnect)
+├── vite.config.js                     # Vite konfiqurasiyası
+├── package.json
+│
+└── src/
+    ├── main.jsx                       # React root — createRoot()
+    ├── index.css                      # Global reset + CSS design tokens (:root vars)
+    ├── App.jsx                        # Ana komponent — yalnız state + render
+    ├── App.css                        # Layout: app, app-header, app-main
+    │
+    ├── hooks/                         # Data layer — bütün iş məntiqi burada
+    │   ├── useFetch.js                # API çəkmə, AbortController, error handling
+    │   └── useDebounce.js             # Generic debounce utility hook
+    │
+    └── components/                    # Presentation layer — yalnız render
+        ├── SearchBar/
+        │   ├── SearchBar.jsx          # Controlled input + clear düyməsi
+        │   └── SearchBar.css
+        ├── ResultsList/
+        │   ├── ResultsList.jsx        # 5 vəziyyət: prompt/loading/error/empty/nəticə
+        │   └── ResultsList.css
+        ├── Card/
+        │   ├── Card.jsx               # Film kartı — poster, badge, lazy img
+        │   └── Card.css
+        └── Pagination/
+            ├── Pagination.jsx         # Smart ellipsis range
+            └── Pagination.css
+```
 
-Nəzarət olunan (`controlled`) input komponenti.
+---
+
+## Arxitektura
+
+```
+┌─────────────────────────────────────────┐
+│                App.jsx                  │
+│  state: query, currentPage              │
+│  useDebounce(query, 500) ──────────┐    │
+│  useFetch(debouncedQ, page) ───┐   │    │
+└────────────────────────────────┼───┼────┘
+                                 │   │
+              ┌──────────────────┘   │
+              ▼                      ▼
+       ┌─────────────┐      ┌──────────────────┐
+       │  useFetch   │      │  useDebounce     │
+       │  (API layer)│      │  (utility layer) │
+       └──────┬──────┘      └──────────────────┘
+              │ AbortController + Promise.all
+              ▼
+       ┌─────────────┐
+       │  OMDb API   │
+       │  (REST)     │
+       └─────────────┘
+```
+
+**Separation of Concerns:**
+- `App.jsx` — yalnız UI state idarəsi, API-dən xəbərsizdir
+- `useFetch` — yalnız data çəkmə, UI-dən xəbərsizdir
+- `useDebounce` — heç bir layihə spesifik kodu yoxdur, generic-dir
+- Komponentlər — yalnız props render edir, heç bir side effect yoxdur
+
+---
+
+## Checkpoint-1 — Layihə Qurulumu + Komponent Strukturu (10 bal)
+
+> **Nə edildi:** Vite + React layihəsi quruldu, 4 əsas komponent strukturu yaradıldı.
+
+### SearchBar
+
+Nəzarət olunan (`controlled`) input — state həmişə React-dadır.
 
 ```jsx
 <SearchBar
@@ -72,240 +138,483 @@ Nəzarət olunan (`controlled`) input komponenti.
 />
 ```
 
-**Xüsusiyyətlər:**
-- Daxili `clear` düyməsi — mətn varsa avtomatik göstərilir
-- `focus-within` ilə axtarış ikonunun rəng dəyişməsi
-- `aria-label`, `role="search"` — tam əlçatanlıq
+| Xüsusiyyət | Detal |
+|---|---|
+| Controlled input | `value` + `onChange` props |
+| Clear düyməsi | Yalnız mətn varsa (`value &&`) göstərilir |
+| Accessibility | `role="search"`, `aria-label="Film axtarışı"` |
+| UX | `type="search"` — mobil klaviaturada axtarış düyməsi göstərir |
 
----
+### ResultsList
 
-### `ResultsList`
-
-4 fərqli vəziyyəti idarə edir:
+5 vəziyyəti idarə edən container komponenti:
 
 | Vəziyyət | Şərt | UI |
 |---|---|---|
-| **Prompt** | `query` boşdur | Axtarış et mesajı |
-| **Loading** | `loading={true}` | 10 ədəd skeleton kart |
-| **Error** | `error` string-dir | Xəta mesajı (`role="alert"`) |
-| **Empty** | `items.length === 0` | Tapılmadı mesajı |
-| **Nəticələr** | Normal hal | Responsive grid + meta |
+| **Prompt** | `!query` | "Film axtar" — ilkin ekran |
+| **Loading** | `loading === true` | 10 SkeletonCard (shimmer) |
+| **Error** | `error !== null` | Xəta paneli (`role="alert"`) |
+| **Empty** | `items.length === 0` | "Nəticə tapılmadı" |
+| **Nəticələr** | Normal hal | Responsive grid + meta məlumat |
 
-```jsx
-<ResultsList
-  items={paginatedItems}
-  loading={loading}
-  error={error}
-  query={query}
-  total={totalItems}
-/>
-```
+### Card
 
----
+Tək film/serial/bölüm kartı.
 
-### `Card`
+| Xüsusiyyət | Detal |
+|---|---|
+| Lazy loading | `loading="lazy"` + `decoding="async"` |
+| Poster fallback | `N/A` posterdə SVG placeholder |
+| Layout shift yoxdur | `aspect-ratio: 2/3` — ölçü sabitdir |
+| Type badge | `film`, `serial`, `bölüm` — Azərbaycanca |
 
-Tək axtarış nəticəsi (film/serial/bölüm).
+### Pagination
 
-**Xüsusiyyətlər:**
-- `loading="lazy"` + `decoding="async"` — şəkil yükləməsi optimallaşdırılıb
-- `N/A` poster üçün SVG placeholder
-- `aspect-ratio: 2/3` — poster ölçüsü sabitdir, layout shift yoxdur
-
----
-
-### `Pagination`
-
-Ağıllı səhifələr sırası ilə nav komponenti.
+Ağıllı ellipsis-li nav komponenti:
 
 ```
-[←]  [1]  [...]  [4]  [5]  [6]  [...]  [12]  [→]
+[←]  [1]  [...]  [4]  [5]  [6]  [...]  [20]  [→]
 ```
 
-**Xüsusiyyətlər:**
-- `buildPageRange()` — 7-dən çox səhifədə ellipsis göstərir
-- `aria-current="page"` — aktiv səhifə screen reader-lər üçün işarələnib
-- Sərhəddə olan `prev/next` düymələri `disabled` vəziyyətinə keçir
+| Xüsusiyyət | Detal |
+|---|---|
+| `buildPageRange()` | 7-dən çox səhifədə ellipsis göstərir |
+| `aria-current="page"` | Aktiv səhifə screen reader-lər üçün |
+| Prev/Next disabled | Sərhəddə avtomatik |
 
----
-
-## CSS Metodologiyası
-
-Bütün stillər **BEM** (Block–Element–Modifier) konvensiyası ilə yazılıb:
-
-```
-.block { }
-.block__element { }
-.block__element--modifier { }
-```
-
-**Nümunə:**
+### CSS — BEM Metodologiyası
 
 ```css
-/* Block */
-.pagination { }
-
-/* Element */
-.pagination__btn { }
-.pagination__ellipsis { }
-
-/* Modifier */
-.pagination__btn--active { }
+.card           { }   /* Block */
+.card__poster   { }   /* Element */
+.card__type-badge { } /* Element */
 ```
 
-**Qaydalar:**
-
-- Animasiyalar `transform` + `opacity` ilə — compositor thread, reflow yoxdur
-- CSS custom properties (`--var`) design token sistemi kimi
+BEM-in əsl faydası: CSS specificity konflikti sıfıra endirilir,
+`!important` heç vaxt lazım olmur.
 
 ---
 
-## Checkpoint-2 — API inteqrasiyası (fetch) & useEffect (20 bal)
+## Checkpoint-2 — API İnteqrasiyası + `useEffect` (20 bal)
 
-> **Checkpoint-2** · API inteqrasiyası + `useEffect` + `useFetch` custom hook · **20 bal**
+> **Nə edildi:** `useFetch` custom hook-u yaradıldı. OMDb API-yə async `fetch` sorğusu,
+> `AbortController` ilə race condition müdafiəsi, tam xəta idarəetməsi tətbiq edildi.
 
-### Nələr edildi?
+### `useFetch` hook interfeysi
 
-1. **Custom Hook (`useFetch`)**:
-   - `src/hooks/useFetch.js` faylı yaratdıq.
-   - `useEffect` daxilində OMDb REST API-yə (`https://www.omdbapi.com/`) async `fetch` sorğusu göndərilir.
-   - `data`, `totalResults`, `loading`, və `error` state-ləri hook vasitəsilə qaytarılır.
+```js
+const { data, totalResults, loading, error } = useFetch(query, page);
+```
 
-2. **Race Condition Müdafiəsi (AbortController)**:
-   - `useEffect` daxilində `AbortController` yaradıldı və `signal` parameteri `fetch`-ə ötürüldü.
-   - İstifadəçi tez-tez axtarış sözünü dəyişdikdə və ya səhifələrə keçdikdə `cleanup` funksiyası (`controller.abort()`) köhnə sorğunu avtomatik ləğv edir.
-   - Köhnə API cavabının yeni nəticəni əvəz etməsi (Race condition bug-ı) tam olaraq həll edildi.
+### `Promise.all` — paralel sorğu
 
-3. **Xəta İdarəetməsi (Error Handling)**:
-   - Şəbəkə xətaları, 500/404 server xətaları və OMDb API xətaları (`Response: "False"`, `"Too many results."`) tutulur və istifadəçiyə aydın mesaj göstərilir.
-   - Ləğv edilən sorğular üçün (`AbortError`) xəta mesajı verilmir.
+OMDb API bir sorğuda maksimum 10 film qaytarır.
+Sequential (sıralı) əvəzinə paralel sorğu:
+
+```js
+// Sequential: 300ms + 300ms = 600ms
+// Promise.all: max(300ms, 300ms) = 300ms  ← 2x sürətli
+
+const [res1, res2] = await Promise.all([
+  fetch(`...&page=${omdbPage1}`, { signal }),
+  fetch(`...&page=${omdbPage2}`, { signal })
+]);
+```
+
+### `AbortController` — Race Condition Müdafiəsi
+
+```
+İstifadəçi "Bat" yazır    → HTTP #1 başlayır  (300ms)
+İstifadəçi "Batman" yazır → HTTP #1 ABORT olur
+                           → HTTP #2 başlayır  (150ms)
+HTTP #2 → gəldi, "Batman" nəticəsi ✅
+HTTP #1 → heç vaxt UI-ə çatmır    ✅
+```
+
+```js
+useEffect(() => {
+  const controller = new AbortController();
+
+  fetchMovies(controller.signal);
+
+  return () => controller.abort(); // cleanup → köhnə sorğu ölür
+}, [query, page]);
+```
+
+### Xəta İdarəetməsi
+
+| Xəta növü | Necə tutulur | İstifadəçiyə |
+|---|---|---|
+| Şəbəkə xətası | `catch(err)` | "Şəbəkə xətası..." |
+| HTTP 500/404 | `!res.ok` check | "Server xətası..." |
+| OMDb API xətası | `json.Response === 'False'` | API mesajı |
+| "Too many results" | `json.Error` müqayisəsi | "Daha dəqiq yazın" |
+| "Movie not found" | `setError(null)` | Empty state göstərilir |
+| AbortError | `err.name === 'AbortError'` | Heç nə (ignore) |
 
 ---
 
 ## Checkpoint-3 — Axtarışda Debounce (15 bal)
 
-> **Checkpoint-3** · `useDebounce` custom hook (500ms delay) · **15 bal**
+> **Nə edildi:** `useDebounce` custom hook-u yaradıldı. Hər simvolda API çağırışı əvəzinə
+> yalnız yazmanı dayandırdıqdan 500ms sonra bir çağırış gedir.
 
-### Nələr edildi?
+### `useDebounce` hook-u
 
-1. **Custom Hook (`useDebounce`)**:
-   - `src/hooks/useDebounce.js` faylı yaradıldı.
-   - `setTimeout` və `clearTimeout` mexanizmi ilə daxil edilən axtarış mətni 500ms ləngidilir.
+```js
+export function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-2. **Şəbəkə Optimallaşdırılması (Performance)**:
-   - İstifadəçi klaviaturada hərf-hərf yazarkən hər simvolda API-yə gereksiz sorğular göndərilmir.
-   - Yalnız istifadəçi yazmanı dayandırdıqdan 500ms sonra tək bir API sorğusu icra edilir.
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
 
-3. **Sorğunun Ləğvi (Cleanup)**:
-   - `useEffect` cleanup funksiyası daxilində `clearTimeout(handler)` istifadə edilərək hər yeni simvolda köhnə taymer ləğv olunur və yaddaş sızması önlənir.
+    return () => clearTimeout(handler); // ← yeni hərf → əvvəlki taymer məhv edilir
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+```
+
+### Debounce vs Throttle
+
+| | Debounce | Throttle |
+|---|---|---|
+| **Məntiqi** | Son hadisədən N ms sonra icra et | Hər N ms-də bir icazə ver |
+| **Nə vaxt** | Yazma bitdikdə | Hər sabit intervalda |
+| **Nümunə** | Axtarış input | Scroll listener |
+
+Axtarış üçün **debounce** düzgündür — istifadəçi yazmanı bitirəndə bir sorğu lazımdır.
+
+### Niyə 500ms?
+
+```
+Ortalama yazma sürəti: hərflər arası ~150ms
+300ms → bəzən yarım sözdə trigger olur
+500ms → yazma bitmişdir, cavab anında hiss edilir
+700ms+ → gec hiss olunur, UX pisdir
+```
+
+### `clearTimeout` vacibliyi
+
+```
+"Batman" yazılır (6 hərf, clearTimeout olmadan):
+B       → setTimeout #1 yarandı (500ms)
+Ba      → setTimeout #2 yarandı (500ms)
+Bat     → setTimeout #3 yarandı (500ms)
+Batm    → setTimeout #4 yarandı (500ms)
+Batma   → setTimeout #5 yarandı (500ms)
+Batman  → setTimeout #6 yarandı (500ms)
+→ 6 API sorğusu! ❌
+
+clearTimeout ilə:
+B       → #1 yarandı
+Ba      → #1 ləğv, #2 yarandı
+...
+Batman  → #5 ləğv, #6 yarandı, 500ms sonra 1 sorğu ✅
+```
 
 ---
 
-## Checkpoint-4 — UI State-lərin İdarə Edilməsi & Film Sayının Artırılması (15 bal)
+## Checkpoint-4 — UI State-lərin İdarəsi (15 bal)
 
-> **Checkpoint-4** · Loading, Error, Empty, Prompt state-ləri & 20 Film/Səhifə · **15 bal**
+> **Nə edildi:** Loading (skeleton shimmer), Error, Empty və Prompt state-ləri tam
+> bir-birindən ayrıldı. `Promise.all` ilə hər səhifədə 20 film nəticəsi təmin edildi.
 
-### Nələr edildi?
+### State Machine Pattern — Early Return
 
-1. **Filmlərin Sayının Artırılması (20 Film/Səhifə)**:
-   - `useFetch` custom hook-unda `Promise.all` tətbiq olunaraq OMDb-dən paralel 2 səhifə çəkilir.
-   - Hər səhifədə **10 film əvəzinə 20 film nəticəsi** təqdim olunur.
-   - Təkrarlanan filmlərin qarşısı unikal `imdbID` Map filtri ilə alınır.
+```jsx
+// Yanlış yanaşma (junior):
+{loading && <Spinner />}
+{error && <Error />}
+{!loading && !error && items.map(...)}
+// Problem: loading=true + error mövcud ola bilər → ikisi birlikdə render!
 
-2. **Loading State (Skeleton Shimmer)**:
-   - Sorğu göndərildikdə `ResultsList` daxilində 10 ədəd skeleton shimmer kartı göstərilir.
-   - Shimmer animasiyası GPU-accelerated (`translateX`) işləyir.
+// Düzgün yanaşma (checkpoint-4):
+if (loading) return <SkeletonGrid />;   // bu nöqtədən sonra loading keçildi
+if (error)   return <ErrorPanel />;     // bu nöqtədən sonra error keçildi
+if (!query)  return <PromptScreen />;   // bu nöqtədən sonra query var
+if (!items.length) return <EmptyState />;
+return <MoviesGrid />;                  // qarantili: yükləndi, xəta yox, nəticə var
+```
 
-3. **Error State (Xəta paneli)**:
-   - Şəbəkə kəsilməsi, HTTP xətaları (500/404) və API xətaları (`Response: "False"`, `"Too many results."`) tutulur.
-   - Screen reader-lər üçün `role="alert"` atributlu bildiriş paneli göstərilir.
+Hər `return` öncəkiləri qarantili edir. Vəziyyətlər üst-üstə düşə bilməz.
 
-4. **Empty State (Boş nəticə)**:
-   - Axtarış üzrə heç nə tapılmadıqda ("Nəticə tapılmadı") xüsusi boş hal göstərilir, loading fırlanması sonsuz olmur.
+### Skeleton vs Spinner
 
-5. **Prompt State (İlkin hal)**:
-   - Axtarış mətni daxil edilmədikdə istifadəçini yönləndirən ilkin "Film axtar" ekranı təqdim edilir.
+| | Skeleton Shimmer | Spinner |
+|---|---|---|
+| **Layout shift** | Yoxdur (yer tutulur) | Ola bilər |
+| **UX hissi** | "Nə gözlədiyimi bilirəm" | "Nə olacağını bilmirəm" |
+| **Perceived perf.** | +20% daha sürətli hiss | — |
+| **Istifadə** | Google, Facebook, YouTube | Köhnə UX |
+
+```jsx
+// SkeletonCard — aria-hidden: screen reader görməsin
+function SkeletonCard() {
+  return (
+    <div className="skeleton-card" aria-hidden="true">
+      <div className="skeleton-card__poster" />   {/* shimmer animasiya */}
+      <div className="skeleton-card__line" />
+    </div>
+  );
+}
+```
+
+### Sonsuz Loading Bug-ının Həlli
+
+```js
+// useFetch.js — query boşdursa heç nə etmə
+if (!trimmedQuery) {
+  setData([]);
+  setTotalResults(0);
+  setError(null);
+  setLoading(false); // ← bu sətir olmasa: loading = true, heç vaxt false olmaz
+  return;
+}
+```
+
+### 20 Film/Səhifə — Unikal Filtri
+
+```js
+const combined = [...list1, ...list2]; // 10 + 10
+
+// Map ilə O(n) duplicate silmə:
+const uniqueMovies = Array.from(
+  new Map(combined.map((item) => [item.imdbID, item])).values()
+);
+// Eyni imdbID-li film iki dəfə gəlsə → yalnız bir dəfə saxlanılır
+```
 
 ---
 
-## Checkpoint-5 — Səhifələmə / Pagination (15 bal)
+## Checkpoint-5 — Pagination (15 bal)
 
-> **Checkpoint-5** · `Pagination` komponenti & Dinamik API Səhifələməsi · **15 bal**
+> **Nə edildi:** `Pagination` komponenti, dinamik `totalPages` hesabı, OMDb page mapping
+> formulası, smooth scroll və page reset tətbiq edildi.
 
-### Nələr edildi?
+### OMDb Page Mapping
 
-1. **Dinamik Səhifələmə Hesablanması**:
-   - OMDb API-dən gələn `totalResults` sayına əsasən ümumi səhifə sayı dəqiq hesablanır (`Math.ceil(totalResults / 20)`).
-   - Hər görünən səhifə üçün API-yə uyğun olan OMDb `page` parametrləri göndərilir.
+OMDb hər sorğuda 10 nəticə qaytarır. Biz 20/səhifə göstəririk:
 
-2. **Ağıllı Ellipsis Range (`buildPageRange`)**:
-   - Səhifə sayı çox olduqda `[1, '...', 4, 5, 6, '...', 15]` formatında ağıllı diapazon göstərilir.
-   - Sərhəddə olan (1-ci səhifədə `Əvvəlki` və sonuncu səhifədə `Növbəti`) düymələr avtomatik `disabled` halına keçir.
+```
+Bizim CP-1 → OMDb page 1 + page 2  (nəticə  1–20)
+Bizim CP-2 → OMDb page 3 + page 4  (nəticə 21–40)
+Bizim CP-3 → OMDb page 5 + page 6  (nəticə 41–60)
 
-3. **İstifadəçi Təcrübəsi & State Reseti**:
-   - Səhifə dəyişdikdə tətbiq avtomatik və rahat şəkildə yuxarıya (`window.scrollTo({ top: 0, behavior: 'smooth' })`) sürüşür.
-   - Axtarış sözü dəyişdikdə səhifələmə avtomatik 1-ci səhifəyə sıfırlanır.
-   - Aktiv səhifə düyməsi screen reader-lər üçün `aria-current="page"` atributu ilə işarələnir.
+Formula:
+  omdbPage1 = (page - 1) * 2 + 1
+  omdbPage2 = (page - 1) * 2 + 2
+```
+
+### Ellipsis Range — `buildPageRange(current, total)`
+
+```
+current=1,  total=20 → [1, 2, '...', 20]
+current=5,  total=20 → [1, '...', 4, 5, 6, '...', 20]
+current=19, total=20 → [1, '...', 18, 19, 20]
+current=1,  total=5  → [1, 2, 3, 4, 5]  (7-dən az = ellipsis yoxdur)
+```
+
+`delta = 1` → aktiv səhifənin sol-sağında 1 nömrə. `delta = 2` yazsan daha geniş range.
+
+### UX Detalları
+
+```js
+// App.jsx
+function handleQueryChange(value) {
+  setQuery(value);
+  setCurrentPage(1); // ← yeni axtarış → 1-ci səhifəyə sıfırla
+}
+
+function handlePageChange(page) {
+  setCurrentPage(page);
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // ← yuxarıya yumşaq sürüş
+}
+```
 
 ---
 
 ## Checkpoint-6 — Hook-ların Düzgün İstifadəsi (15 bal)
 
-> **Checkpoint-6** · Dependency Array Dürüstlüyü & Clean-up Mexanizmləri · **15 bal**
+> **Nə edildi:** `useEffect` dependency array-ları dəqiqləşdirildi, `clearTimeout` və
+> `AbortController` ilə tam cleanup mexanizmləri tətbiq edildi.
 
-### Nələr edildi?
+### Dependency Array — React-in Ən Çox Səhv Anlaşılan Hissəsi
 
-1. **Dəqiq Dependency Array-lər**:
-   - `useFetch` hook-unda `useEffect` dependency array-ı `[query, page]` olaraq dəqiq müəyyənləşdirildi. Yalnız bu arqumentlər dəyişdikdə fetch effekti yenidən icra olunur (unnecessary re-render-lər önləndi).
-   - `useDebounce` hook-unda dependency array `[value, delay]` dəqiqliyi ilə saxlanıldı.
+```js
+useEffect(() => { ... }, [])         // yalnız mount-da (bir dəfə)
+useEffect(() => { ... }, [a, b])     // a ya b dəyişdikdə
+useEffect(() => { ... })             // hər render-də ← demək olar həmişə yanlışdır
+```
 
-2. **Yaddaş Sızmasının Qarşısının Alınması (`clearTimeout`)**:
-   - `useDebounce` daxilində `useEffect` cleanup funksiyası `return () => clearTimeout(handler);` vasitəsilə hər yeni hərf yazıldıqda evvelki taymerləri avtomatik təmizləyir.
+```js
+// useFetch.js
+useEffect(() => { ... }, [query, page]);
+// Yalnız axtarış sözü ya səhifə dəyişdikdə fetch gedir.
+// [] olsaydı → heç vaxt yenilənməzdi
+// olmasa → hər render-də → sonsuz dövr
 
-3. **Köhnə Sorğuların Şəbəkə Səviyyəsində Ləğvi (`AbortController`)**:
-   - `useFetch` daxilində sorğu başladıqda `new AbortController()` yaradılır və cleanup funksiyası `controller.abort()` vasitəsilə tamamlanmamış köhnə HTTP sorğularını şəbəkə səviyyəsində ləğv edir.
-   - Sorğu ləğv edildikdə `err.name === 'AbortError'` yoxlanaraq xəta state-inin lüzumsuz yenilənməsi əngəllənir.
+// useDebounce.js
+useEffect(() => { ... }, [value, delay]);
+// delay-i daxil etməsək: delay prop dəyişsə debounce yenilənməz (stale closure)
+```
+
+### `finally` + `signal.aborted` — Kritik Detal
+
+```js
+} finally {
+  if (!signal.aborted) {
+    setLoading(false);
+  }
+}
+```
+
+`finally` həmişə işləyir — hətta `AbortError` olduqda da.
+`signal.aborted` yoxlanmadan `setLoading(false)` çağrılsa:
+
+```
+Ssenari:
+1. Sorğu başladı → loading = true
+2. Komponent unmount oldu → controller.abort()
+3. finally işlədi → setLoading(false) ← unmount olmuş komponentdə!
+   → React: "Can't perform state update on unmounted component" ⚠️
+```
+
+`signal.aborted` yoxlaması bu xəbərdarlığı tamamilə aradan qaldırır.
+
+### Cleanup Xülasəsi
+
+| Hook | Cleanup | Nə edir |
+|---|---|---|
+| `useFetch` | `controller.abort()` | Köhnə HTTP sorğusunu şəbəkə səviyyəsində ləğv edir |
+| `useDebounce` | `clearTimeout(handler)` | Köhnə taymeri yaddaşdan silir |
 
 ---
 
-## Checkpoint-7 — Kod Təşkili & Custom Hook Arxitekturası (10 bal)
+## Checkpoint-7 — Kod Təşkili + Custom Hook Arxitekturası (10 bal)
 
-> **Checkpoint-7** · Data çəkmə üçün `useFetch` custom hook-u & Senior Kod Strukturu · **10 bal**
+> **Nə edildi:** Data çəkmə məntiqi `useFetch.js`-ə, debounce məntiqi `useDebounce.js`-ə
+> köçürüldü. `App.jsx` yalnız UI state idarəsi ilə məşğuldur.
 
-### Nələr edildi?
+### SOLID Prinsiplərinin Hook-larla Tətbiqi
 
-1. **Modulyar Custom Hook Arxitekturası (`src/hooks/`)**:
-   - Data çəkmə məntiqi tamamilə `useFetch.js` custom hook-una köçürüldü. `App.jsx` yalnız UI idarəetməsi ilə məşğul olur — **Single Responsibility Principle** tam tətbiq edildi.
-   - Debounce məntiqi ayrıca `useDebounce.js` hook-una ayrıldı. Bu hook istənilən dəyərə tətbiq edilə bilən ümumi (generic) bir yardımçı kimi yazıldı.
+**Single Responsibility Principle (SRP)**
+```
+App.jsx       → yalnız: query state, page state, render
+useFetch.js   → yalnız: API sorğusu, error handling, loading state
+useDebounce.js → yalnız: vaxtla gecikdirmə məntiqi
+```
 
-2. **Hook Interfeysi (Clean API)**:
-   ```js
-   // useFetch — data, loading, error, total-u qaytarır
-   const { data, totalResults, loading, error } = useFetch(debouncedQuery, currentPage);
+**Open/Closed Principle (OCP)**
+```
+Sabah tələb: "OMDb-dən IMDb API-yə keçin"
+→ Yalnız useFetch.js dəyişir
+→ App.jsx, SearchBar, Card, Pagination — heç biri toxunulmur ✅
+```
 
-   // useDebounce — gecikdirilmiş dəyəri qaytarır
-   const debouncedQuery = useDebounce(query, 500);
-   ```
+**Encapsulation**
+```js
+// App.jsx — useFetch-in içini bilmir
+const { data, totalResults, loading, error } = useFetch(debouncedQuery, currentPage);
+// AbortController, Promise.all, encodeURIComponent — App.jsx-dən gizlidir
+```
 
-3. **Keyfiyyət Yoxlamalarından Keçmə**:
-   - **Race Condition**: `AbortController` ilə tam həll olunub.
-   - **API 500 / Key Limit**: Xəta idarəetmə tam tətbiq olunub, tətbiq çökmür.
-   - **Sonsuz Loading Spinner**: Boş nəticədə `loading` `false`-a düşür, sonsuz dövr yoxdur.
-   - **BEM CSS & Semantik HTML**: Bütün komponentlər BEM konvensiyasına, `aria-*` atributları ilə tam əlçatanlıq standartlarına uyğundur.
+### Hook İnterfeysi
+
+```js
+// useFetch — tam data layer
+const { data, totalResults, loading, error } = useFetch(query, page);
+
+// useDebounce — generic utility (bu layihəyə bağlı deyil)
+const debouncedQuery = useDebounce(query, 500);
+const debouncedPrice = useDebounce(price, 300); // başqa yerdə də işlər
+```
 
 ---
 
-## Sürət məsləhətləri (Performance Notes)
+## Keyfiyyət Yoxlamaları (guide.md)
 
-- **Skeleton shimmer** → `translateX` ilə GPU-da işlənir
-- **Poster şəkilləri** → `loading="lazy"` — yalnız görünən şəkillər yüklənir
-- **Animations** → `opacity` + `transform` — compositor-only, `layout` triggeri yoxdur
-- **Font preconnect** → `index.html`-də Google Fonts üçün `<link rel="preconnect">`
-- **Race Condition Prevention** → `AbortController` ilə ləğv edilən sorğular şəbəkə resursuna qənaət edir
-- **Debounce Optimization** → 500ms delay ilə ləğv edilən gereksiz API çağırışları
-- **Parallel Page Fetching** → `Promise.all` vasitəsilə 2 paralel OMDb səhifəsi çəkilərək 20 film nümayişi
+Bu üç ssenaridə tətbiq düzgün davranır:
 
+### 1. Race Condition — "Bat" → "Batman"
 
+```
+İstifadəçi "Bat" yazır    → sorğu #1 göndərildi
+İstifadəçi "Batman" yazır → useEffect cleanup → controller.abort()
+                           → sorğu #1 şəbəkə səviyyəsində öldürüldü
+                           → sorğu #2 göndərildi
+Sorğu #2 → "Batman" nəticəsi göstərildi ✅
+Sorğu #1 → heç vaxt UI-ə çatmadı      ✅
+```
 
+### 2. API Key Limit / Server 500
 
+```js
+// Həm HTTP xəta kodu yoxlanılır:
+if (!res1.ok || !res2.ok) {
+  throw new Error('Server xətası baş verdi...');
+}
 
+// Həm də OMDb-nin özünün xəta mesajı:
+if (json1.Response === 'False') {
+  setError(json1.Error || 'Məlumat tapılmadı.');
+}
+```
+
+Tətbiq heç vaxt çökmür — istifadəçiyə aydın mesaj göstərilir.
+
+### 3. Sonsuz Loading Spinner
+
+```js
+// Query boşdursa:
+if (!trimmedQuery) {
+  setLoading(false); // ← dərhal false → spinner göstərilmir
+  return;
+}
+
+// "Movie not found" halında:
+} else if (json1.Error === 'Movie not found!') {
+  setError(null); // ← error yox, Empty state göstərilir
+}
+// + finally blokunda setLoading(false) → spinner dayanır
+```
+
+---
+
+## Performance Qeydləri
+
+| Optimallaşdırma | Texnika | Nəticə |
+|---|---|---|
+| Skeleton shimmer | `translateX` — GPU compositor | Reflow yoxdur |
+| Poster şəkilləri | `loading="lazy"` | Yalnız viewport-da olan yüklənir |
+| Animasiyalar | `opacity` + `transform` | Layout trigger yoxdur |
+| Google Fonts | `<link rel="preconnect">` | Font əvvəlcədən bağlantı |
+| API sorğuları | `AbortController` | Ləğv edilən sorğu şəbəkə resursuna toxunmur |
+| Hər simvolda API | `useDebounce(500ms)` | Lazımsız çağırışlar sıfırlanır |
+| Paralel sorğu | `Promise.all` | 2 sorğu eyni vaxtda → 2x sürət |
+
+---
+
+## Əlçatanlıq (Accessibility)
+
+| Element | Atribut | Məqsəd |
+|---|---|---|
+| SearchBar wrapper | `role="search"` | Landmark region |
+| Input | `aria-label="Film axtarışı"` | Screen reader label |
+| Clear düyməsi | `aria-label="Axtarışı təmizlə"` | Screen reader label |
+| Error panel | `role="alert"` | Dərhal elan edilir |
+| Skeleton | `aria-hidden="true"` | Screen reader görməsin |
+| Loading section | `aria-busy="true"` | Yüklənmə bildirişi |
+| Aktiv səhifə | `aria-current="page"` | Pagination mövqeyi |
+| Prev/Next | `aria-label="Əvvəlki/Növbəti səhifə"` | Düymə məqsədi |
+
+---
+
+## Mənbələr
+
+- [react.dev](https://react.dev) — "Synchronizing with Effects" bölməsi
+- [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+- [OMDb API](https://www.omdbapi.com/) — açıq film REST API
+- [BEM Metodologiyası](https://getbem.com/)
